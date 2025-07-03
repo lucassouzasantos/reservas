@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 
-// Corrigida: função para obter a data no formato YYYY-MM-DD no fuso horário UTC-3 (Buenos Aires / Paraguai)
-function obtenerFechaLocalBuenosAires(date) {
-  const offset = -3 * 60;
-  const localDate = new Date(date.getTime() + (offset + date.getTimezoneOffset()) * 60000);
-
-  const year = localDate.getFullYear();
-  const month = String(localDate.getMonth() + 1).padStart(2, '0');
-  const day = String(localDate.getDate()).padStart(2, '0');
-
+// ✅ Função corrigida: apenas formata a data local para YYYY-MM-DD sem aplicar offset manual
+function formatarDataYYYYMMDD(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
@@ -39,8 +35,8 @@ function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
 
     for (let day = 1; day <= ultimoDia.getDate(); day++) {
       const date = new Date(year, month, day);
-      const dateStr = obtenerFechaLocalBuenosAires(date);
-      const isToday = dateStr === obtenerFechaLocalBuenosAires(new Date());
+      const dateStr = formatarDataYYYYMMDD(date);
+      const isToday = dateStr === formatarDataYYYYMMDD(new Date());
       const isSelected = dateStr === fechaSeleccionada;
 
       resultado.push({
@@ -127,8 +123,7 @@ function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
             type="button"
             key={index}
             onClick={(e) => dia.isCurrentMonth && seleccionarFecha(dia.date, e)}
-            className={`
-              py-1 text-sm rounded-full w-full h-full
+            className={`py-1 text-sm rounded-full w-full h-full
               ${!dia.isCurrentMonth ? 'text-gray-300' : 'hover:bg-gray-100'}
               ${dia.isSelected ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
               ${dia.isToday && !dia.isSelected ? 'bg-blue-100 text-blue-800' : ''}
