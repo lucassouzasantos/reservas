@@ -9,24 +9,24 @@ import { obtenerFechaActual } from './utils/dateUtils';
 function App() {
   const [vista, setVista] = useState('salas'); // 'salas', 'reservar', 'misReservas'
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
-  const [reservas, setReservas] = useState(reservasIniciales);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(obtenerFechaActual());
+  const [reservas, setReservas] = useState(() => reservasIniciales); // Usar função para inicialização
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => obtenerFechaActual()); // Usar função para inicialização
   
-  // Función para seleccionar una sala y abrir el formulario de reserva
+  // Função para seleccionar una sala y abrir el formulario de reserva
   const seleccionarSala = (sala) => {
     setSalaSeleccionada(sala);
     setVista('reservar');
   };
   
-  // Función para crear una nueva reserva
+  // Função para crear una nueva reserva
   const crearReserva = (nuevaReserva) => {
-    setReservas([...reservas, { ...nuevaReserva, id: Date.now() }]);
+    setReservas(prevReservas => [...prevReservas, { ...nuevaReserva, id: Date.now() }]);
     setVista('misReservas');
   };
   
-  // Función para cancelar una reserva existente
+  // Função para cancelar una reserva existente
   const cancelarReserva = (id) => {
-    setReservas(reservas.filter(reserva => reserva.id !== id));
+    setReservas(prevReservas => prevReservas.filter(reserva => reserva.id !== id));
   };
   
   // Navegar de regreso desde el formulario de reserva
