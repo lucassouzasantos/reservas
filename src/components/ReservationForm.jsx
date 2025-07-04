@@ -1,101 +1,98 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import Calendar from './Calendar';
-import { formatearFecha, obtenerHorasDisponibles, formatearHora } from '../utils/dateUtils';
+import React, { useState, useMemo, useCallback } from 'react'
+import Calendar from './Calendar'
+import { formatearFecha, formatearHora } from '../utils/dateUtils'
+import { useReservasBySalaAndDate } from '../hooks/useSupabaseData'
+import { useAuth } from '../contexts/AuthContext'
+import { obtenerHorasDisponibles } from '../utils/dateUtils'
 
-function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, onCancelar }) {
-  const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [horaInicio, setHoraInicio] = useState('');
-  const [duracion, setDuracion] = useState(1);
-  const [descripcion, setDescripcion] = useState('');
-  const [asistentes, setAsistentes] = useState(1);
-  const [mostrarCalendario, setMostrarCalendario] = useState(false);
-  const [errores, setErrores] = useState({});
+function ReservationForm({ sala, fechaSeleccionada, onCrearReserva, onCancelar }) {
+  const { user, profile } = useAuth()
+  const [nombre, setNombre] = useState(profile?.full_name || '')
+  const [correo, setCorreo] = useState(user?.email || '')
+  const [horaInicio, setHoraInicio] = useState('')
+  const [duracion, setDuracion] = useState(1)
+  const [descripcion, setDescripcion] = useState('')
+  const [asistentes, setAsistentes] = useState(1)
+  const [mostrarCalendario, setMostrarCalendario] = useState(false)
+  const [errores, setErrores] = useState({})
   
-  const reservasDeSala = useMemo(() => 
-    reservas.filter(res => res.salaId === sala.id && res.fecha === fechaSeleccionada),
-    [reservas, sala.id, fechaSeleccionada]
-  );
+  const { reservas } = useReservasBySalaAndDate(sala.id, fechaSeleccionada)
   
   const horasDisponibles = useMemo(() => 
-    obtenerHorasDisponibles(reservasDeSala),
-    [reservasDeSala]
-  );
+    obtenerHorasDisponibles(reservas),
+    [reservas]
+  )
   
   const toggleCalendario = useCallback(() => {
-    setMostrarCalendario(prev => !prev);
-  }, []);
-  
-  const seleccionarFecha = useCallback(() => {
-    onCancelar();
-  }, [onCancelar]);
+    setMostrarCalendario(prev => !prev)
+  }, [])
   
   const validarFormulario = useCallback(() => {
-    const nuevosErrores = {};
+    const nuevosErrores = {}
     
     if (!nombre.trim()) {
-      nuevosErrores.nombre = "El nombre es obligatorio";
+      nuevosErrores.nombre = "El nombre es obligatorio"
     }
     
     if (!correo.trim()) {
-      nuevosErrores.correo = "El correo electrónico es obligatorio";
+      nuevosErrores.correo = "El correo electrónico es obligatorio"
     } else if (!/\S+@\S+\.\S+/.test(correo)) {
-      nuevosErrores.correo = "El correo electrónico no es válido";
+      nuevosErrores.correo = "El correo electrónico no es válido"
     }
     
     if (!horaInicio) {
-      nuevosErrores.horaInicio = "Debes seleccionar una hora de inicio";
+      nuevosErrores.horaInicio = "Debes seleccionar una hora de inicio"
     }
     
     if (asistentes <= 0) {
-      nuevosErrores.asistentes = "El número de asistentes debe ser mayor a 0";
+      nuevosErrores.asistentes = "El número de asistentes debe ser mayor a 0"
     }
     
-    if (asistentes > sala.capacidad) {
-      nuevosErrores.asistentes = `El número de asistentes excede la capacidad de la sala (${sala.capacidad})`;
+    if (asistentes > sala.capacidade) {
+      nuevosErrores.asistentes = `El número de asistentes excede la capacidad de la sala (${sala.capacidade})`
     }
     
-    setErrores(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
-  }, [nombre, correo, horaInicio, asistentes, sala.capacidad]);
+    setErrores(nuevosErrores)
+    return Object.keys(nuevosErrores).length === 0
+  }, [nombre, correo, horaInicio, asistentes, sala.capacidade])
   
   const handleSubmit = useCallback((e) => {
-    e.preventDefault();
+    e.preventDefault()
     
     if (validarFormulario()) {
-      const horaInicioNum = parseInt(horaInicio.split(':')[0]);
-      const horaFin = `${horaInicioNum + duracion}:00`;
+      const horaInicioNum = parseInt(horaInicio.split(':')[0])
+      const horaFin = `${horaInicioNum + duracion}:00`
       
       const nuevaReserva = {
-        salaId: sala.id,
-        fecha: fechaSeleccionada,
-        horaInicio,
-        horaFin,
-        nombre,
+        sala_id: sala.id,
+        fecha: `${fechaSeleccionada}T00:00:00`,
+        hora_inicio: horaInicio,
+        hora_fin: horaFin,
+        nome: nombre,
         correo,
         asistentes: parseInt(asistentes),
         descripcion,
-      };
+      }
       
-      onCrearReserva(nuevaReserva);
+      onCrearReserva(nuevaReserva)
     }
-  }, [validarFormulario, horaInicio, duracion, sala.id, fechaSeleccionada, nombre, correo, asistentes, descripcion, onCrearReserva]);
+  }, [validarFormulario, horaInicio, duracion, sala.id, fechaSeleccionada, nombre, correo, asistentes, descripcion, onCrearReserva])
   
-  const fechaFormateada = useMemo(() => formatearFecha(fechaSeleccionada), [fechaSeleccionada]);
+  const fechaFormateada = useMemo(() => formatearFecha(fechaSeleccionada), [fechaSeleccionada])
   
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold mb-6">Reservar: {sala.nombre}</h2>
+      <h2 className="text-2xl font-semibold mb-6">Reservar: {sala.nome}</h2>
       
       <div className="mb-6">
         <div className="flex flex-wrap gap-2 py-2">
           <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-            {sala.capacidad} Personas
+            {sala.capacidade} Personas
           </div>
           <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             {sala.ubicacion}
           </div>
-          {sala.equipamiento && sala.equipamiento.map((equipo) => (
+          {sala.equipamento && sala.equipamento.map((equipo) => (
             <div key={equipo} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
               {equipo}
             </div>
@@ -121,7 +118,7 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
             <div className="absolute z-10">
               <Calendar 
                 fechaSeleccionada={fechaSeleccionada}
-                onSeleccionarFecha={seleccionarFecha}
+                onSeleccionarFecha={() => setMostrarCalendario(false)}
               />
             </div>
           )}
@@ -215,7 +212,7 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
               type="number"
               id="asistentes"
               min="1"
-              max={sala.capacidad}
+              max={sala.capacidade}
               value={asistentes}
               onChange={(e) => setAsistentes(e.target.value)}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -257,7 +254,7 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
         </div>
       </form>
     </div>
-  );
+  )
 }
 
-export default ReservationForm;
+export default ReservationForm

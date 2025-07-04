@@ -1,8 +1,7 @@
-import React from 'react';
-import { formatearFecha, formatearHora } from '../utils/dateUtils';
+import React from 'react'
+import { formatearFecha, formatearHora } from '../utils/dateUtils'
 
 function ReservationList({ reservas, salas, onCancelar }) {
-  // Si no hay reservas, mostrar un mensaje
   if (reservas.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow text-center">
@@ -14,30 +13,40 @@ function ReservationList({ reservas, salas, onCancelar }) {
           Aún no has reservado ninguna sala de reuniones.
         </p>
       </div>
-    );
+    )
   }
 
-  // Ordenar las reservas por fecha y hora
   const reservasOrdenadas = [...reservas].sort((a, b) => {
-    // Primero por fecha
-    if (a.fecha < b.fecha) return -1;
-    if (a.fecha > b.fecha) return 1;
+    const fechaA = new Date(a.fecha).getTime()
+    const fechaB = new Date(b.fecha).getTime()
     
-    // Si la fecha es igual, ordenar por hora de inicio
-    const [horaA] = a.horaInicio.split(':');
-    const [horaB] = b.horaInicio.split(':');
+    if (fechaA !== fechaB) return fechaB - fechaA
     
-    return parseInt(horaA) - parseInt(horaB);
-  });
+    const [horaA] = a.hora_inicio.split(':')
+    const [horaB] = b.hora_inicio.split(':')
+    
+    return parseInt(horaA) - parseInt(horaB)
+  })
 
-  // Agrupar reservas por fecha
   const reservasPorFecha = reservasOrdenadas.reduce((acc, reserva) => {
-    if (!acc[reserva.fecha]) {
-      acc[reserva.fecha] = [];
+    const fecha = reserva.fecha.split('T')[0]
+    if (!acc[fecha]) {
+      acc[fecha] = []
     }
-    acc[reserva.fecha].push(reserva);
-    return acc;
-  }, {});
+    acc[fecha].push(reserva)
+    return acc
+  }, {})
+
+  const getStatusColor = (estado) => {
+    switch (estado) {
+      case 'confirmada':
+        return 'bg-green-100 text-green-800'
+      case 'cancelada':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-yellow-100 text-yellow-800'
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -51,31 +60,34 @@ function ReservationList({ reservas, salas, onCancelar }) {
           
           <div className="divide-y divide-gray-200">
             {reservasPorFecha[fecha].map((reserva) => {
-              // Buscar la sala correspondiente
-              const sala = salas.find(s => s.id === reserva.salaId);
+              const sala = reserva.salas || salas.find(s => s.id === reserva.sala_id)
               
-              // Calcular si la reserva es para hoy y si ya ha pasado
-              const hoy = new Date().toISOString().split('T')[0];
-              const esHoy = fecha === hoy;
+              const hoy = new Date().toISOString().split('T')[0]
+              const esHoy = fecha === hoy
               
-              const horaActual = new Date().getHours();
-              const horaReserva = parseInt(reserva.horaInicio.split(':')[0]);
-              const yaOcurrio = esHoy && horaActual > horaReserva;
+              const horaActual = new Date().getHours()
+              const horaReserva = parseInt(reserva.hora_inicio.split(':')[0])
+              const yaOcurrio = esHoy && horaActual > horaReserva
               
               return (
                 <div key={reserva.id} className="px-6 py-4">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div className="flex-grow">
-                      <h4 className="text-xl font-semibold text-gray-900">
-                        {sala ? sala.nombre : 'Sala no disponible'}
-                      </h4>
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xl font-semibold text-gray-900">
+                          {sala ? sala.nome : 'Sala no disponible'}
+                        </h4>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(reserva.estado)}`}>
+                          {reserva.estado}
+                        </span>
+                      </div>
                       
                       <div className="mt-2 flex flex-wrap gap-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
                           <svg className="mr-1.5 h-2 w-2 text-blue-400" fill="currentColor" viewBox="0 0 8 8">
                             <circle cx="4" cy="4" r="3" />
                           </svg>
-                          {formatearHora(reserva.horaInicio)} - {formatearHora(reserva.horaFin)}
+                          {formatearHora(reserva.hora_inicio)} - {formatearHora(reserva.hora_fin)}
                         </span>
                         
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
@@ -104,7 +116,7 @@ function ReservationList({ reservas, salas, onCancelar }) {
                     </div>
                     
                     <div className="mt-4 md:mt-0">
-                      {!yaOcurrio && (
+                      {!yaOcurrio && reserva.estado !== 'cancelada' && (
                         <button
                           onClick={() => onCancelar(reserva.id)}
                           className="px-3 py-1 border border-red-300 text-red-700 bg-white hover:bg-red-50 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -121,13 +133,13 @@ function ReservationList({ reservas, salas, onCancelar }) {
                     </div>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
       ))}
     </div>
-  );
+  )
 }
 
-export default ReservationList;
+export default ReservationList

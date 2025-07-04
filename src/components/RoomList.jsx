@@ -1,33 +1,32 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import RoomCard from './RoomCard';
-import Calendar from './Calendar';
-import { formatearFecha } from '../utils/dateUtils';
+import React, { useState, useMemo, useCallback } from 'react'
+import RoomCard from './RoomCard'
+import Calendar from './Calendar'
+import { formatearFecha } from '../utils/dateUtils'
+import { useReservasBySalaAndDate } from '../hooks/useSupabaseData'
 
-function RoomList({ salas, reservas, fechaSeleccionada, setFechaSeleccionada, onSeleccionarSala }) {
-  const [filtroBusqueda, setFiltroBusqueda] = useState('');
-  const [filtroCapacidad, setFiltroCapacidad] = useState('');
-  const [mostrarCalendario, setMostrarCalendario] = useState(false);
+function RoomList({ salas, fechaSeleccionada, setFechaSeleccionada, onSeleccionarSala }) {
+  const [filtroBusqueda, setFiltroBusqueda] = useState('')
+  const [filtroCapacidad, setFiltroCapacidad] = useState('')
+  const [mostrarCalendario, setMostrarCalendario] = useState(false)
 
-  // Memoizar as salas filtradas para evitar recálculos desnecessários
   const salasFiltradas = useMemo(() => {
     return salas.filter(sala => {
-      const cumpleNombre = sala.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase());
-      const cumpleCapacidad = filtroCapacidad === '' || sala.capacidad >= parseInt(filtroCapacidad);
-      return cumpleNombre && cumpleCapacidad;
-    });
-  }, [salas, filtroBusqueda, filtroCapacidad]);
+      const cumpleNombre = sala.nome.toLowerCase().includes(filtroBusqueda.toLowerCase())
+      const cumpleCapacidad = filtroCapacidad === '' || sala.capacidade >= parseInt(filtroCapacidad)
+      return cumpleNombre && cumpleCapacidad
+    })
+  }, [salas, filtroBusqueda, filtroCapacidad])
 
   const toggleCalendario = useCallback(() => {
-    setMostrarCalendario(prev => !prev);
-  }, []);
+    setMostrarCalendario(prev => !prev)
+  }, [])
 
   const seleccionarFecha = useCallback((fecha) => {
-    setFechaSeleccionada(fecha);
-    setMostrarCalendario(false);
-  }, [setFechaSeleccionada]);
+    setFechaSeleccionada(fecha)
+    setMostrarCalendario(false)
+  }, [setFechaSeleccionada])
 
-  // Memoizar a data formatada
-  const fechaFormateada = useMemo(() => formatearFecha(fechaSeleccionada), [fechaSeleccionada]);
+  const fechaFormateada = useMemo(() => formatearFecha(fechaSeleccionada), [fechaSeleccionada])
 
   return (
     <div className="space-y-6">
@@ -99,10 +98,10 @@ function RoomList({ salas, reservas, fechaSeleccionada, setFechaSeleccionada, on
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {salasFiltradas.length > 0 ? (
           salasFiltradas.map((sala) => (
-            <RoomCard
+            <RoomCardWithReservas
               key={sala.id}
               sala={sala}
-              reservas={reservas.filter(r => r.salaId === sala.id && r.fecha === fechaSeleccionada)}
+              fechaSeleccionada={fechaSeleccionada}
               onSeleccionar={() => onSeleccionarSala(sala)}
             />
           ))
@@ -113,7 +112,19 @@ function RoomList({ salas, reservas, fechaSeleccionada, setFechaSeleccionada, on
         )}
       </div>
     </div>
-  );
+  )
 }
 
-export default RoomList;
+function RoomCardWithReservas({ sala, fechaSeleccionada, onSeleccionar }) {
+  const { reservas } = useReservasBySalaAndDate(sala.id, fechaSeleccionada)
+  
+  return (
+    <RoomCard
+      sala={sala}
+      reservas={reservas}
+      onSeleccionar={onSeleccionar}
+    />
+  )
+}
+
+export default RoomList

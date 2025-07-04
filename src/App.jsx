@@ -1,37 +1,65 @@
-import { useState, useCallback, useMemo } from 'react';
-import Header from './components/Header';
-import RoomList from './components/RoomList';
-import ReservationForm from './components/ReservationForm';
-import ReservationList from './components/ReservationList';
-import { salas, reservasIniciales } from './utils/data';
-import { obtenerFechaActual } from './utils/dateUtils';
+import React, { useState } from 'react'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import AuthPage from './components/auth/AuthPage'
+import Header from './components/Header'
+import RoomList from './components/RoomList'
+import ReservationForm from './components/ReservationForm'
+import ReservationList from './components/ReservationList'
+import AdminPanel from './components/admin/AdminPanel'
+import { useSalas, useReservas } from './hooks/useSupabaseData'
+import { obtenerFechaActual } from './utils/dateUtils'
 
-function App() {
-  const [vista, setVista] = useState('salas');
-  const [salaSeleccionada, setSalaSeleccionada] = useState(null);
-  const [reservas, setReservas] = useState(() => reservasIniciales);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => obtenerFechaActual());
+function AppContent() {
+  const { user, loading } = useAuth()
+  const [vista, setVista] = useState('salas')
+  const [salaSeleccionada, setSalaSeleccionada] = useState(null)
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => obtenerFechaActual())
   
-  const seleccionarSala = useCallback((sala) => {
-    setSalaSeleccionada(sala);
-    setVista('reservar');
-  }, []);
+  const { salas } = useSalas()
+  const { reservas, createReserva, cancelReserva } = useReservas(user?.id)
   
-  const crearReserva = useCallback((nuevaReserva) => {
-    setReservas(prevReservas => [...prevReservas, { ...nuevaReserva, id: Date.now() }]);
-    setVista('misReservas');
-  }, []);
+  const seleccionarSala = (sala) => {
+    setSalaSeleccionada(sala)
+    setVista('reservar')
+  }
   
-  const cancelarReserva = useCallback((id) => {
-    setReservas(prevReservas => prevReservas.filter(reserva => reserva.id !== id));
-  }, []);
+  const crearReserva = async (nuevaReserva) => {
+    const { error } = await createReserva(nuevaReserva)
+    if (!error) {
+      setVista('misReservas')
+    } else {
+      alert('Error al crear la reserva')
+    }
+  }
   
-  const volverALista = useCallback(() => {
-    setSalaSeleccionada(null);
-    setVista('salas');
-  }, []);
+  const cancelarReserva = async (id) => {
+    const { error } = await cancelReserva(id)
+    if (error) {
+      alert('Error al cancelar la reserva')
+    }
+  }
+  
+  const volverALista = () => {
+    setSalaSeleccionada(null)
+    setVista('salas')
+  }
 
-  const anoActual = useMemo(() => new Date().getFullYear(), []);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <AuthPage />
+  }
+
+  const anoActual = new Date().getFullYear()
   
   return (
     <div className="min-h-screen bg-gray-100">
@@ -43,7 +71,6 @@ function App() {
             <h1 className="text-3xl font-bold text-gray-800">Salas Disponibles</h1>
             <RoomList 
               salas={salas} 
-              reservas={reservas}
               fechaSeleccionada={fechaSeleccionada}
               setFechaSeleccionada={setFechaSeleccionada}
               onSeleccionarSala={seleccionarSala}
@@ -66,7 +93,6 @@ function App() {
             <ReservationForm 
               sala={salaSeleccionada} 
               fechaSeleccionada={fechaSeleccionada}
-              reservas={reservas}
               onCrearReserva={crearReserva}
               onCancelar={volverALista}
             />
@@ -83,13 +109,28 @@ function App() {
             />
           </div>
         )}
+        
+        {vista === 'admin' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-800">Panel de Administración</h1>
+            <AdminPanel />
+          </div>
+        )}
       </main>
       
       <footer className="mt-12 py-6 bg-gray-800 text-white text-center">
         <p>© {anoActual} Sistema de Reserva de Salas</p>
       </footer>
     </div>
-  );
+  )
 }
 
-export default App;
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  )
+}
+
+export default App
