@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Calendar from './Calendar';
 import { formatearFecha, obtenerHorasDisponibles, formatearHora } from '../utils/dateUtils';
 
@@ -12,23 +12,25 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
   const [mostrarCalendario, setMostrarCalendario] = useState(false);
   const [errores, setErrores] = useState({});
   
-  // Filtra las reservas para esta sala en la fecha seleccionada
-  const reservasDeSala = reservas.filter(
-    res => res.salaId === sala.id && res.fecha === fechaSeleccionada
+  const reservasDeSala = useMemo(() => 
+    reservas.filter(res => res.salaId === sala.id && res.fecha === fechaSeleccionada),
+    [reservas, sala.id, fechaSeleccionada]
   );
   
-  // Obtiene horas disponibles para esta sala en la fecha seleccionada
-  const horasDisponibles = obtenerHorasDisponibles(reservasDeSala);
+  const horasDisponibles = useMemo(() => 
+    obtenerHorasDisponibles(reservasDeSala),
+    [reservasDeSala]
+  );
   
-  const toggleCalendario = () => {
-    setMostrarCalendario(!mostrarCalendario);
-  };
+  const toggleCalendario = useCallback(() => {
+    setMostrarCalendario(prev => !prev);
+  }, []);
   
-  const seleccionarFecha = (fecha) => {
-    onCancelar(); // Vuelve al listado con la nueva fecha
-  };
+  const seleccionarFecha = useCallback(() => {
+    onCancelar();
+  }, [onCancelar]);
   
-  const validarFormulario = () => {
+  const validarFormulario = useCallback(() => {
     const nuevosErrores = {};
     
     if (!nombre.trim()) {
@@ -55,13 +57,12 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
     
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
-  };
+  }, [nombre, correo, horaInicio, asistentes, sala.capacidad]);
   
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     
     if (validarFormulario()) {
-      // Calcular hora de fin basada en la duración
       const horaInicioNum = parseInt(horaInicio.split(':')[0]);
       const horaFin = `${horaInicioNum + duracion}:00`;
       
@@ -78,7 +79,9 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
       
       onCrearReserva(nuevaReserva);
     }
-  };
+  }, [validarFormulario, horaInicio, duracion, sala.id, fechaSeleccionada, nombre, correo, asistentes, descripcion, onCrearReserva]);
+  
+  const fechaFormateada = useMemo(() => formatearFecha(fechaSeleccionada), [fechaSeleccionada]);
   
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -101,7 +104,7 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
         
         <div className="relative mt-4">
           <div className="flex items-center mb-2">
-            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
             <span className="font-medium">Fecha:</span>
@@ -110,7 +113,7 @@ function ReservationForm({ sala, fechaSeleccionada, reservas, onCrearReserva, on
               onClick={toggleCalendario}
               className="ml-2 text-blue-600 hover:text-blue-800 underline"
             >
-              {formatearFecha(fechaSeleccionada)}
+              {fechaFormateada}
             </button>
           </div>
           

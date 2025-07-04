@@ -9,10 +9,9 @@ import { obtenerFechaActual } from './utils/dateUtils';
 function App() {
   const [vista, setVista] = useState('salas');
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
-  const [reservas, setReservas] = useState(reservasIniciales);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(obtenerFechaActual());
+  const [reservas, setReservas] = useState(() => reservasIniciales);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => obtenerFechaActual());
   
-  // Usar useCallback para evitar re-criação desnecessária de funções
   const seleccionarSala = useCallback((sala) => {
     setSalaSeleccionada(sala);
     setVista('reservar');
@@ -32,7 +31,6 @@ function App() {
     setVista('salas');
   }, []);
 
-  // Memoizar o ano atual para evitar recálculos
   const anoActual = useMemo(() => new Date().getFullYear(), []);
   
   return (
@@ -59,7 +57,7 @@ function App() {
               onClick={volverALista}
               className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
             >
-              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
               </svg>
               Volver a las salas
