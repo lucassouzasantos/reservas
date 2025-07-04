@@ -1,4 +1,4 @@
-// Datos de ejemplo para las salas de reuniones
+// Dados de exemplo para as salas de reuniones
 export const salas = [
   {
     id: 1,
@@ -32,24 +32,24 @@ export const salas = [
   },
   {
     id: 6,
-    nombre: "Sala Piso 3", // Nome genérico adicionado
-    capacidad: 8,          // Capacidade atribuída (pode ajustar)
+    nombre: "Sala Piso 3",
+    capacidad: 8,
     ubicacion: "Piso 3",
   }
 ];
 
-
-// Obtén la fecha actual en formato ISO (YYYY-MM-DD)
-const hoy = new Date();
-const manana = new Date();
-manana.setDate(hoy.getDate() + 1);
-
+// Função para obter data no formato correto
 const formatoLocal = (fecha) => {
   const year = fecha.getFullYear();
   const month = String(fecha.getMonth() + 1).padStart(2, '0');
   const day = String(fecha.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+// Obtém a data atual e amanhã
+const hoy = new Date();
+const manana = new Date();
+manana.setDate(hoy.getDate() + 1);
 
 const hoyStr = formatoLocal(hoy);
 const mananaStr = formatoLocal(manana);
@@ -59,7 +59,7 @@ export const reservasIniciales = [
   {
     id: 1,
     salaId: 1,
-    fecha: hoy,
+    fecha: hoyStr,
     horaInicio: "9:00",
     horaFin: "11:00",
     nombre: "Carlos Gómez",
@@ -70,7 +70,7 @@ export const reservasIniciales = [
   {
     id: 2,
     salaId: 3,
-    fecha: hoy,
+    fecha: hoyStr,
     horaInicio: "14:00",
     horaFin: "16:00",
     nombre: "Ana Martínez",
@@ -81,7 +81,7 @@ export const reservasIniciales = [
   {
     id: 3,
     salaId: 2,
-    fecha: manana,
+    fecha: mananaStr,
     horaInicio: "10:00",
     horaFin: "12:00",
     nombre: "Miguel López",

@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 
-// Corrigida: função para obter a data no formato YYYY-MM-DD no fuso horário UTC-3 (Buenos Aires / Paraguai)
-function obtenerFechaLocalBuenosAires(date) {
-  const offset = -3 * 60;
-  const localDate = new Date(date.getTime() + (offset + date.getTimezoneOffset()) * 60000);
-
-  const year = localDate.getFullYear();
-  const month = String(localDate.getMonth() + 1).padStart(2, '0');
-  const day = String(localDate.getDate()).padStart(2, '0');
-
+// Função para obter a data no formato YYYY-MM-DD sem problemas de fuso horário
+function formatarDataLocal(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+// Função para criar uma data a partir de uma string YYYY-MM-DD
+function criarDataLocal(dateString) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
   const [mesActual, setMesActual] = useState(() => {
-    const [year, month] = fechaSeleccionada.split('-');
-    return { year: parseInt(year), month: parseInt(month) - 1 };
+    const fechaObj = criarDataLocal(fechaSeleccionada);
+    return { year: fechaObj.getFullYear(), month: fechaObj.getMonth() };
   });
 
   const nombresMeses = [
@@ -39,8 +41,8 @@ function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
 
     for (let day = 1; day <= ultimoDia.getDate(); day++) {
       const date = new Date(year, month, day);
-      const dateStr = obtenerFechaLocalBuenosAires(date);
-      const isToday = dateStr === obtenerFechaLocalBuenosAires(new Date());
+      const dateStr = formatarDataLocal(date);
+      const isToday = dateStr === formatarDataLocal(new Date());
       const isSelected = dateStr === fechaSeleccionada;
 
       resultado.push({
@@ -113,7 +115,7 @@ function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
 
       {!esHoy && (
         <button onClick={irMesActual} className="w-full mb-2 text-xs text-blue-600 hover:text-blue-800">
-          Ir ao mês atual
+          Ir al mes actual
         </button>
       )}
 

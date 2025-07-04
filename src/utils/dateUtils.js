@@ -11,16 +11,17 @@ export function esLaMismaFecha(fechaA, fechaB) {
 export function formatearFecha(fechaISO) {
   if (!fechaISO) return '';
 
-  const fecha = typeof fechaISO === 'string' ? new Date(fechaISO) : fechaISO;
-  const fechaLocal = normalizarFecha(fecha);
+  // Criar data local a partir da string YYYY-MM-DD
+  const [year, month, day] = fechaISO.split('-').map(Number);
+  const fecha = new Date(year, month - 1, day);
 
   const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-  const diaSemana = diasSemana[fechaLocal.getDay()];
-  const dia = fechaLocal.getDate();
-  const mes = meses[fechaLocal.getMonth()];
-  const anio = fechaLocal.getFullYear();
+  const diaSemana = diasSemana[fecha.getDay()];
+  const dia = fecha.getDate();
+  const mes = meses[fecha.getMonth()];
+  const anio = fecha.getFullYear();
 
   return `${diaSemana}, ${dia} de ${mes} de ${anio}`;
 }
