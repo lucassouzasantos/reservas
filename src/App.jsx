@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Header from './components/Header';
 import RoomList from './components/RoomList';
 import ReservationForm from './components/ReservationForm';
@@ -7,33 +7,33 @@ import { salas, reservasIniciales } from './utils/data';
 import { obtenerFechaActual } from './utils/dateUtils';
 
 function App() {
-  const [vista, setVista] = useState('salas'); // 'salas', 'reservar', 'misReservas'
+  const [vista, setVista] = useState('salas');
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
-  const [reservas, setReservas] = useState(() => reservasIniciales); // Usar função para inicialização
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => obtenerFechaActual()); // Usar função para inicialização
+  const [reservas, setReservas] = useState(reservasIniciales);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(obtenerFechaActual());
   
-  // Função para seleccionar una sala y abrir el formulario de reserva
-  const seleccionarSala = (sala) => {
+  // Usar useCallback para evitar re-criação desnecessária de funções
+  const seleccionarSala = useCallback((sala) => {
     setSalaSeleccionada(sala);
     setVista('reservar');
-  };
+  }, []);
   
-  // Função para crear una nueva reserva
-  const crearReserva = (nuevaReserva) => {
+  const crearReserva = useCallback((nuevaReserva) => {
     setReservas(prevReservas => [...prevReservas, { ...nuevaReserva, id: Date.now() }]);
     setVista('misReservas');
-  };
+  }, []);
   
-  // Função para cancelar una reserva existente
-  const cancelarReserva = (id) => {
+  const cancelarReserva = useCallback((id) => {
     setReservas(prevReservas => prevReservas.filter(reserva => reserva.id !== id));
-  };
+  }, []);
   
-  // Navegar de regreso desde el formulario de reserva
-  const volverALista = () => {
+  const volverALista = useCallback(() => {
     setSalaSeleccionada(null);
     setVista('salas');
-  };
+  }, []);
+
+  // Memoizar o ano atual para evitar recálculos
+  const anoActual = useMemo(() => new Date().getFullYear(), []);
   
   return (
     <div className="min-h-screen bg-gray-100">
@@ -88,7 +88,7 @@ function App() {
       </main>
       
       <footer className="mt-12 py-6 bg-gray-800 text-white text-center">
-        <p>© {new Date().getFullYear()} Sistema de Reserva de Salas</p>
+        <p>© {anoActual} Sistema de Reserva de Salas</p>
       </footer>
     </div>
   );

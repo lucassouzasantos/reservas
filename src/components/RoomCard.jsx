@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { obtenerHorasDisponibles } from '../utils/dateUtils';
 
 function RoomCard({ sala, reservas, onSeleccionar }) {
-  const horasDisponibles = obtenerHorasDisponibles(reservas);
-  const estaDisponible = horasDisponibles.length > 0;
-  const porcentajeDisponible = Math.round((horasDisponibles.length / 12) * 100);
+  // Memoizar os cálculos de disponibilidade
+  const { horasDisponibles, estaDisponible, porcentajeDisponible } = useMemo(() => {
+    const horas = obtenerHorasDisponibles(reservas);
+    const disponible = horas.length > 0;
+    const porcentaje = Math.round((horas.length / 12) * 100);
+    
+    return {
+      horasDisponibles: horas,
+      estaDisponible: disponible,
+      porcentajeDisponible: porcentaje
+    };
+  }, [reservas]);
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg">

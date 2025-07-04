@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import RoomCard from './RoomCard';
 import Calendar from './Calendar';
 import { formatearFecha } from '../utils/dateUtils';
@@ -8,25 +8,29 @@ function RoomList({ salas, reservas, fechaSeleccionada, setFechaSeleccionada, on
   const [filtroCapacidad, setFiltroCapacidad] = useState('');
   const [mostrarCalendario, setMostrarCalendario] = useState(false);
 
-  // Filtra las salas según los criterios de búsqueda
-  const salasFiltradas = salas.filter(sala => {
-    const cumpleNombre = sala.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase());
-    const cumpleCapacidad = filtroCapacidad === '' || sala.capacidad >= parseInt(filtroCapacidad);
-    return cumpleNombre && cumpleCapacidad;
-  });
+  // Memoizar as salas filtradas para evitar recálculos desnecessários
+  const salasFiltradas = useMemo(() => {
+    return salas.filter(sala => {
+      const cumpleNombre = sala.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase());
+      const cumpleCapacidad = filtroCapacidad === '' || sala.capacidad >= parseInt(filtroCapacidad);
+      return cumpleNombre && cumpleCapacidad;
+    });
+  }, [salas, filtroBusqueda, filtroCapacidad]);
 
-  const toggleCalendario = () => {
-    setMostrarCalendario(!mostrarCalendario);
-  };
+  const toggleCalendario = useCallback(() => {
+    setMostrarCalendario(prev => !prev);
+  }, []);
 
-  const seleccionarFecha = (fecha) => {
+  const seleccionarFecha = useCallback((fecha) => {
     setFechaSeleccionada(fecha);
     setMostrarCalendario(false);
-  };
+  }, [setFechaSeleccionada]);
+
+  // Memoizar a data formatada
+  const fechaFormateada = useMemo(() => formatearFecha(fechaSeleccionada), [fechaSeleccionada]);
 
   return (
     <div className="space-y-6">
-      { 
       <div className="bg-white p-4 rounded-lg shadow">
         <div className="mb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -68,10 +72,11 @@ function RoomList({ salas, reservas, fechaSeleccionada, setFechaSeleccionada, on
               </label>
               <div className="relative">
                 <button
+                  type="button"
                   onClick={toggleCalendario}
                   className="w-full flex justify-between items-center px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {formatearFecha(fechaSeleccionada)}
+                  {fechaFormateada}
                   <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -90,7 +95,6 @@ function RoomList({ salas, reservas, fechaSeleccionada, setFechaSeleccionada, on
           </div>
         </div>
       </div>
-      }
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {salasFiltradas.length > 0 ? (

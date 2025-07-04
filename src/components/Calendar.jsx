@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 
 // Função para obter a data no formato YYYY-MM-DD sem problemas de fuso horário
 function formatarDataLocal(date) {
@@ -20,14 +20,14 @@ function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
     return { year: fechaObj.getFullYear(), month: fechaObj.getMonth() };
   });
 
-  const nombresMeses = [
+  const nombresMeses = useMemo(() => [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
+  ], []);
 
-  const nombresDias = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const nombresDias = useMemo(() => ['L', 'M', 'X', 'J', 'V', 'S', 'D'], []);
 
-  const generarDiasDelMes = (year, month) => {
+  const generarDiasDelMes = useCallback((year, month) => {
     const primerDia = new Date(year, month, 1);
     const ultimoDia = new Date(year, month + 1, 0);
     const resultado = [];
@@ -39,10 +39,12 @@ function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
       resultado.push({ day: '', isCurrentMonth: false });
     }
 
+    const fechaHoyStr = formatarDataLocal(new Date());
+
     for (let day = 1; day <= ultimoDia.getDate(); day++) {
       const date = new Date(year, month, day);
       const dateStr = formatarDataLocal(date);
-      const isToday = dateStr === formatarDataLocal(new Date());
+      const isToday = dateStr === fechaHoyStr;
       const isSelected = dateStr === fechaSeleccionada;
 
       resultado.push({
@@ -55,43 +57,48 @@ function Calendar({ fechaSeleccionada, onSeleccionarFecha }) {
     }
 
     return resultado;
-  };
+  }, [fechaSeleccionada]);
 
-  const diasDelMes = generarDiasDelMes(mesActual.year, mesActual.month);
+  const diasDelMes = useMemo(() => 
+    generarDiasDelMes(mesActual.year, mesActual.month), 
+    [mesActual.year, mesActual.month, generarDiasDelMes]
+  );
 
-  const irMesAnterior = () => {
+  const irMesAnterior = useCallback(() => {
     setMesActual(prev => {
       const nuevoMes = prev.month - 1;
       if (nuevoMes < 0) return { year: prev.year - 1, month: 11 };
       return { ...prev, month: nuevoMes };
     });
-  };
+  }, []);
 
-  const irMesSiguiente = () => {
+  const irMesSiguiente = useCallback(() => {
     setMesActual(prev => {
       const nuevoMes = prev.month + 1;
       if (nuevoMes > 11) return { year: prev.year + 1, month: 0 };
       return { ...prev, month: nuevoMes };
     });
-  };
+  }, []);
 
-  const seleccionarFecha = (date, e) => {
+  const seleccionarFecha = useCallback((date, e) => {
     e.preventDefault();
     e.stopPropagation();
     onSeleccionarFecha(date);
-  };
+  }, [onSeleccionarFecha]);
 
-  const esHoy =
-    new Date().getMonth() === mesActual.month &&
-    new Date().getFullYear() === mesActual.year;
+  const esHoy = useMemo(() => {
+    const fechaActual = new Date();
+    return fechaActual.getMonth() === mesActual.month &&
+           fechaActual.getFullYear() === mesActual.year;
+  }, [mesActual.month, mesActual.year]);
 
-  const irMesActual = () => {
+  const irMesActual = useCallback(() => {
     const fechaActual = new Date();
     setMesActual({
       year: fechaActual.getFullYear(),
       month: fechaActual.getMonth(),
     });
-  };
+  }, []);
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 w-64 z-50">

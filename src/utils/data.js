@@ -38,7 +38,7 @@ export const salas = [
   }
 ];
 
-// Função para obter data no formato correto (movida para uma função)
+// Função para obter data no formato correto (calculada uma única vez)
 function formatoLocal(fecha) {
   const year = fecha.getFullYear();
   const month = String(fecha.getMonth() + 1).padStart(2, '0');
@@ -46,22 +46,15 @@ function formatoLocal(fecha) {
   return `${year}-${month}-${day}`;
 }
 
-// Função para obter datas de exemplo (evita recalcular constantemente)
-function obtenerFechasEjemplo() {
-  const hoy = new Date();
-  const manana = new Date();
-  manana.setDate(hoy.getDate() + 1);
-  
-  return {
-    hoy: formatoLocal(hoy),
-    manana: formatoLocal(manana)
-  };
-}
+// Calcular as datas uma única vez quando o módulo é carregado
+const hoy = new Date();
+const manana = new Date(hoy);
+manana.setDate(hoy.getDate() + 1);
 
-// Obter as fechas uma única vez
-const { hoy: hoyStr, manana: mananaStr } = obtenerFechasEjemplo();
+const hoyStr = formatoLocal(hoy);
+const mananaStr = formatoLocal(manana);
 
-// Reservas iniciales para demostración
+// Reservas iniciales para demostración (dados estáticos)
 export const reservasIniciales = [
   {
     id: 1,
