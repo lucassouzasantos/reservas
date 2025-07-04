@@ -6,6 +6,7 @@ import RoomList from './components/RoomList'
 import ReservationForm from './components/ReservationForm'
 import ReservationList from './components/ReservationList'
 import AdminPanel from './components/admin/AdminPanel'
+import ConnectionStatus from './components/ConnectionStatus'
 import { useSalas, useReservas } from './hooks/useSupabaseData'
 import { obtenerFechaActual } from './utils/dateUtils'
 
@@ -56,7 +57,14 @@ function AppContent() {
   }
 
   if (!user) {
-    return <AuthPage />
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="max-w-6xl mx-auto p-4">
+          <ConnectionStatus />
+          <AuthPage />
+        </div>
+      </div>
+    )
   }
 
   const anoActual = new Date().getFullYear()
@@ -66,6 +74,8 @@ function AppContent() {
       <Header vista={vista} setVista={setVista} />
       
       <main className="max-w-6xl mx-auto p-4">
+        <ConnectionStatus />
+        
         {vista === 'salas' && (
           <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800">Salas Disponibles</h1>
