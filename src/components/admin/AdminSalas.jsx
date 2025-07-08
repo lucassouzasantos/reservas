@@ -10,7 +10,6 @@ function AdminSalas() {
     nome: '',
     capacidade: '',
     ubicacion: '',
-    equipamento: '',
   })
 
   useEffect(() => {
@@ -40,7 +39,6 @@ function AdminSalas() {
       nome: formData.nome,
       capacidade: parseInt(formData.capacidade),
       ubicacion: formData.ubicacion,
-      equipamento: formData.equipamento ? formData.equipamento.split(',').map(item => item.trim()) : [],
     }
 
     try {
@@ -73,7 +71,6 @@ function AdminSalas() {
       nome: sala.nome,
       capacidade: sala.capacidade.toString(),
       ubicacion: sala.ubicacion || '',
-      equipamento: sala.equipamento ? sala.equipamento.join(', ') : '',
     })
     setShowForm(true)
   }
@@ -100,7 +97,6 @@ function AdminSalas() {
       nome: '',
       capacidade: '',
       ubicacion: '',
-      equipamento: '',
     })
     setEditingSala(null)
     setShowForm(false)
@@ -168,19 +164,6 @@ function AdminSalas() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Equipamiento (separado por comas)
-                </label>
-                <input
-                  type="text"
-                  value={formData.equipamento}
-                  onChange={(e) => setFormData({ ...formData, equipamento: e.target.value })}
-                  placeholder="Proyector, Pizarra, WiFi"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
             </div>
             
             <div className="flex space-x-3">
@@ -213,18 +196,6 @@ function AdminSalas() {
                     <span>Capacidad: {sala.capacidade} personas</span>
                     {sala.ubicacion && <span>• {sala.ubicacion}</span>}
                   </div>
-                  {sala.equipamento && sala.equipamento.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {sala.equipamento.map((equipo, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                        >
-                          {equipo}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 
                 <div className="flex space-x-2">

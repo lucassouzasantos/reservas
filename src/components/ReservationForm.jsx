@@ -92,11 +92,6 @@ function ReservationForm({ sala, fechaSeleccionada, onCrearReserva, onCancelar }
           <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             {sala.ubicacion}
           </div>
-          {sala.equipamento && sala.equipamento.map((equipo) => (
-            <div key={equipo} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-              {equipo}
-            </div>
-          ))}
         </div>
         
         <div className="relative mt-4">
