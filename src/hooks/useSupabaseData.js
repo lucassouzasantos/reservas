@@ -21,6 +21,7 @@ export function useSalas() {
       setSalas(data || [])
     } catch (error) {
       console.error('Error fetching salas:', error)
+      setSalas([]) // Set empty array on error to prevent crashes
     } finally {
       setLoading(false)
     }
@@ -54,6 +55,7 @@ export function useReservas(userId) {
       setReservas(data || [])
     } catch (error) {
       console.error('Error fetching reservas:', error)
+      setReservas([]) // Set empty array on error to prevent crashes
     } finally {
       setLoading(false)
     }
@@ -128,6 +130,7 @@ export function useReservasBySalaAndDate(salaId, fecha) {
       setReservas(data || [])
     } catch (error) {
       console.error('Error fetching reservas:', error)
+      setReservas([]) // Set empty array on error to prevent crashes
     } finally {
       setLoading(false)
     }

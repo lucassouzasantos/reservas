@@ -11,7 +11,7 @@ function ConnectionStatus() {
 
   const checkConnection = async () => {
     try {
-      const { data, error } = await supabase.from('salas').select('count', { count: 'exact', head: true })
+      const { data, error } = await supabase.from('salas').select('id').limit(1)
       
       if (error) {
         setError(error.message)
@@ -57,9 +57,10 @@ function ConnectionStatus() {
             <div className="mt-2 text-sm text-red-700">
               <p>Não foi possível conectar ao Supabase. Verifique:</p>
               <ul className="list-disc list-inside mt-1">
-                <li>Se você clicou no botão "Connect to Supabase" no canto superior direito</li>
+                <li>Se você configurou as variáveis de ambiente do Supabase</li>
                 <li>Se as variáveis de ambiente estão configuradas corretamente</li>
                 <li>Se o projeto Supabase está ativo</li>
+                <li>Se as tabelas foram criadas corretamente no banco</li>
               </ul>
               {error && (
                 <div className="mt-2 p-2 bg-red-100 rounded text-xs">
