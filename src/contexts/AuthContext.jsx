@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, hasValidSupabaseConfig } from '../lib/supabase'
 
 const AuthContext = createContext({})
 
@@ -17,6 +17,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Don't try to get session if Supabase is not configured
+    if (!hasValidSupabaseConfig() || !supabase) {
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
@@ -44,6 +50,10 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const fetchProfile = async (userId) => {
+    if (!supabase) {
+      throw new Error('Supabase não configurado. Verifique as variáveis de ambiente.')
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -61,6 +71,10 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signIn = async (email, password) => {
+    if (!supabase) {
+      throw new Error('Supabase não configurado. Verifique as variáveis de ambiente.')
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -82,6 +96,10 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      return
+    }
+
     const { error } = await supabase.auth.signOut()
     return { error }
   }
