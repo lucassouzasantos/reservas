@@ -1,15 +1,28 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, hasValidSupabaseConfig } from '../lib/supabase'
 
 export function useSalas() {
   const [salas, setSalas] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Don't fetch data if Supabase is not configured
+  const canFetchData = hasValidSupabaseConfig() && supabase
+
   useEffect(() => {
+    if (!canFetchData) {
+      setLoading(false)
+      return
+    }
     fetchSalas()
-  }, [])
+  }, [canFetchData])
 
   const fetchSalas = async () => {
+    if (!canFetchData) {
+      setSalas([])
+      setLoading(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('salas')
@@ -34,13 +47,26 @@ export function useReservas(userId) {
   const [reservas, setReservas] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Don't fetch data if Supabase is not configured
+  const canFetchData = hasValidSupabaseConfig() && supabase
+
   useEffect(() => {
+    if (!canFetchData) {
+      setLoading(false)
+      return
+    }
     if (userId) {
       fetchReservas()
     }
-  }, [userId])
+  }, [userId, canFetchData])
 
   const fetchReservas = async () => {
+    if (!canFetchData) {
+      setReservas([])
+      setLoading(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('reservas')
@@ -110,13 +136,26 @@ export function useReservasBySalaAndDate(salaId, fecha) {
   const [reservas, setReservas] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Don't fetch data if Supabase is not configured
+  const canFetchData = hasValidSupabaseConfig() && supabase
+
   useEffect(() => {
+    if (!canFetchData) {
+      setLoading(false)
+      return
+    }
     if (salaId && fecha) {
       fetchReservas()
     }
-  }, [salaId, fecha])
+  }, [salaId, fecha, canFetchData])
 
   const fetchReservas = async () => {
+    if (!canFetchData) {
+      setReservas([])
+      setLoading(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('reservas')
