@@ -51,7 +51,8 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = async (userId) => {
     if (!supabase) {
-      throw new Error('Supabase não configurado. Verifique as variáveis de ambiente.')
+      console.error('Supabase not configured')
+      return
     }
 
     try {
@@ -72,7 +73,7 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     if (!supabase) {
-      throw new Error('Supabase não configurado. Verifique as variáveis de ambiente.')
+      return { data: null, error: { message: 'Supabase no configurado. Verifica las variables de ambiente.' } }
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -83,6 +84,10 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signUp = async (email, password, fullName) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase no configurado. Verifica las variables de ambiente.' } }
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,

@@ -12,27 +12,34 @@ function ConnectionStatus() {
   const checkConnection = async () => {
     // First check if we have valid Supabase configuration
     if (!hasValidSupabaseConfig()) {
-      setError('Variáveis de ambiente do Supabase não configuradas')
+      setError('Variables de ambiente de Supabase no configuradas')
       setStatus('config-error')
       return
     }
 
     if (!supabase) {
-      setError('Cliente Supabase não inicializado')
+      setError('Cliente Supabase no inicializado')
       setStatus('config-error')
       return
     }
 
     try {
-      const { data, error } = await supabase.from('salas').select('id').limit(1)
+      // Test connection with a simple query
+      const { data, error } = await supabase
+        .from('salas')
+        .select('id')
+        .limit(1)
       
       if (error) {
+        console.error('Supabase connection error:', error)
         setError(error.message)
         setStatus('error')
       } else {
+        console.log('Supabase connection successful')
         setStatus('connected')
       }
     } catch (err) {
+      console.error('Supabase connection failed:', err)
       setError(err.message)
       setStatus('error')
     }
@@ -66,25 +73,25 @@ function ConnectionStatus() {
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-orange-800">Configuração do Supabase Necessária</h3>
+            <h3 className="text-sm font-medium text-orange-800">Configuración de Supabase Necesaria</h3>
             <div className="mt-2 text-sm text-orange-700">
-              <p>Para usar este aplicativo, você precisa configurar as variáveis de ambiente do Supabase:</p>
+              <p>Para usar esta aplicación, necesitas configurar las variables de ambiente de Supabase:</p>
               <ol className="list-decimal list-inside mt-2 space-y-1">
-                <li>Crie um arquivo <code className="bg-orange-100 px-1 rounded">.env</code> na raiz do projeto</li>
-                <li>Adicione suas credenciais do Supabase:</li>
+                <li>Crea un archivo <code className="bg-orange-100 px-1 rounded">.env</code> en la raíz del proyecto</li>
+                <li>Agrega tus credenciales de Supabase:</li>
               </ol>
               <div className="mt-2 p-3 bg-orange-100 rounded text-xs font-mono">
-                VITE_SUPABASE_URL=https://seu-projeto.supabase.co<br/>
-                VITE_SUPABASE_ANON_KEY=sua-chave-publica-aqui
+                VITE_SUPABASE_URL=https://tu-proyecto.supabase.co<br/>
+                VITE_SUPABASE_ANON_KEY=tu-clave-publica-aqui
               </div>
               <p className="mt-2">
-                <strong>Como obter essas informações:</strong>
+                <strong>Cómo obtener esta información:</strong>
               </p>
               <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>Acesse <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline">supabase.com/dashboard</a></li>
-                <li>Selecione seu projeto</li>
-                <li>Vá em Settings → API</li>
-                <li>Copie a "Project URL" e "anon public" key</li>
+                <li>Accede a <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline">supabase.com/dashboard</a></li>
+                <li>Selecciona tu proyecto</li>
+                <li>Ve a Settings → API</li>
+                <li>Copia la "Project URL" y "anon public" key</li>
               </ul>
               {error && (
                 <div className="mt-2 p-2 bg-orange-200 rounded text-xs">
@@ -93,8 +100,8 @@ function ConnectionStatus() {
               )}
               <div className="mt-2 p-2 bg-orange-200 rounded text-xs">
                 <strong>Status atual:</strong><br/>
-                URL: {supabaseConfig.url || 'Não definida'}<br/>
-                Key: {supabaseConfig.anonKey ? 'Definida' : 'Não definida'}
+                URL: {supabaseConfig.url || 'No definida'}<br/>
+                Key: {supabaseConfig.anonKey ? 'Definida' : 'No definida'}
               </div>
             </div>
             <div className="mt-3">
@@ -121,19 +128,19 @@ function ConnectionStatus() {
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Erro de Conexão com Supabase</h3>
+            <h3 className="text-sm font-medium text-red-800">Error de Conexión con Supabase</h3>
             <div className="mt-2 text-sm text-red-700">
-              <p>Não foi possível conectar ao Supabase. Verifique:</p>
+              <p>No fue posible conectar con Supabase. Verifica:</p>
               <ul className="list-disc list-inside mt-1">
-                <li>Se você configurou as variáveis de ambiente do Supabase</li>
-                <li>Se as variáveis de ambiente estão configuradas corretamente</li>
-                <li>Se o projeto Supabase está ativo</li>
-                <li>Se as tabelas foram criadas corretamente no banco</li>
-                <li>Se você tem conexão com a internet</li>
+                <li>Si configuraste las variables de ambiente de Supabase</li>
+                <li>Si las variables de ambiente están configuradas correctamente</li>
+                <li>Si el proyecto Supabase está activo</li>
+                <li>Si las tablas fueron creadas correctamente en la base de datos</li>
+                <li>Si tienes conexión a internet</li>
               </ul>
               {error && (
                 <div className="mt-2 p-2 bg-red-100 rounded text-xs">
-                  <strong>Erro técnico:</strong> {error}
+                  <strong>Error técnico:</strong> {error}
                 </div>
               )}
             </div>
@@ -160,7 +167,7 @@ function ConnectionStatus() {
           </svg>
         </div>
         <div className="ml-3">
-          <p className="text-sm text-green-700">Conectado ao Supabase com sucesso!</p>
+          <p className="text-sm text-green-700">¡Conectado a Supabase exitosamente!</p>
         </div>
       </div>
     </div>
